@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"GuiXinSchool/dao"
 	"GuiXinSchool/pkg"
 	"GuiXinSchool/service"
 	"net/http"
@@ -11,13 +12,9 @@ import (
 
 type AuthCtrl struct{
 	as *service.AuthSvc
+	us *service.UserSvc
 }
 
-func NewAuthCtrl(as *service.AuthSvc) *AuthCtrl {
-	return &AuthCtrl{
-		as: as,
-	}
-}
 
 type LoginReq struct {
 	StuID   string `json:"stu_id" binding:"required"`
@@ -33,7 +30,7 @@ func(ac *AuthCtrl) Login(c *gin.Context) {
 	}
 
 
-	if err := ac.as.Login(c.Request.Context(), req.StuID, req.Password);err!=nil {
+	if err := ac.as.Login(c, req.StuID, req.Password);err!=nil {
 		c.JSON(http.StatusUnauthorized, pkg.WithMsg(pkg.AuthResp, err.Error()))
 		return
 	}
@@ -42,11 +39,19 @@ func(ac *AuthCtrl) Login(c *gin.Context) {
 		Token string `json:"token"`
 	}
 
-	token,err := ac.as.GetToken(c.Request.Context(), req.StuID)
+	token,err := ac.as.GetToken(c, req.StuID)
 	if err!=nil {
-		c.JSON(http.StatusInternalServerError, pkg.WithMsg(pkg.AuthResp, err.Error()))
+		c.JSON(http.StatusInternalServerError, pkg.WithMsg(pkg.AuthResp, "获取token失败"))
 		return
 	}
+
+	if err:=ac.us.CreateIfNotExist(c,dao.User{
+		ID: req.StuID,
+		Name: req.StuID,//默认用户名为学号
+	});err!=nil {
+		c.JSON(http.StatusInternalServerError, pkg.WithMsg(pkg.AuthResp, "检查用户或创建用户失败"))
+	}
+
 	c.JSON(http.StatusOK, pkg.WithData(pkg.SuccessResp, TokenData{Token: token}))
 }
 

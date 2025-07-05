@@ -11,13 +11,18 @@ type Engine struct{
 	e *gin.Engine
 }
 
-func NewEngine(authCtrl controller.AuthCtrl) *Engine {
+func NewEngine(authCtrl *controller.AuthCtrl,userCtrl *controller.UserCtrl) *Engine {
 	e := gin.Default()
 
 	g := e.Group("/api/v1")
 	{
 		g.POST("/login",authCtrl.Login)
 	}
+    
+    userG := e.Group("/api/v1/user")
+    {
+        userG.PUT("/update_name",authCtrl.JWTAuthMiddleware(), userCtrl.UpdateUserName)
+    }
 
 
 	return &Engine{
