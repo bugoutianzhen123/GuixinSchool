@@ -1,18 +1,22 @@
 package route
 
-import "github.com/gin-gonic/gin"
+import (
+	"GuiXinSchool/controller"
+
+	"github.com/gin-gonic/gin"
+)
 
 
 type Engine struct{
 	e *gin.Engine
 }
 
-func NewEngine() *Engine {
+func NewEngine(authCtrl controller.AuthCtrl) *Engine {
 	e := gin.Default()
 
 	g := e.Group("/api/v1")
 	{
-		g.POST("/login",)
+		g.POST("/login",authCtrl.Login)
 	}
 
 

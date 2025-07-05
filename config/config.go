@@ -13,7 +13,6 @@ type DBConf struct{
 }
 
 
-
 func Load(cf *AppConfig, path string) error {
 	v := viper.New()
 	v.SetConfigFile(path)
