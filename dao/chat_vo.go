@@ -15,4 +15,5 @@ type Session struct{
 	ID uint64 `gorm:"column:id;primaryKey"` //会话ID
 	StuID string `gorm:"column:stu_id"` // 学生ID
 	CreatedTime string `gorm:"column:created_time"` //创建时间
+	Summary     string `gorm:"type:text;column:summary"`   // 会话总结（新增字段）
 }
