@@ -1,7 +1,7 @@
 package deepseek
 
 import (
-	"GuiXinSchool/pkg/aiclient"
+	"GuiXinSchool/aiclient"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -24,6 +24,10 @@ func (c ChatRequest) GetContent() []byte {
 		return nil // or handle error as needed
 	}
 	return data
+}
+// IsStream returns whether the request is for a streaming response
+func (c ChatRequest) IsStream() bool {
+	return c.Stream
 }
 
 type Message struct {
@@ -66,15 +70,19 @@ func NewChatSvc(apiKey string) *ChatSvc {
 func (c *ChatSvc) Chat(ctx context.Context, req aiclient.ChatRequest) (aiclient.ChatResponse, error) {
 	
 	//先进行类型断言
-	_, ok := req.(ChatRequest)
+	typedReq, ok := req.(ChatRequest)
 	if !ok {
 		return nil, fmt.Errorf("invalid request type, expected deepseek.ChatRequest")
+	}
+
+	if typedReq.Stream {
+		typedReq.Stream = false //这个接口不支持流式
 	}
 	
 	var response ChatResponse
 
 	// 序列化请求体
-	reqBody, err := json.Marshal(req)
+	reqBody, err := json.Marshal(typedReq)
 	if err != nil {
 		return response, fmt.Errorf("failed to marshal request: %w", err)
 	}
